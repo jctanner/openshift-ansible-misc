@@ -74,6 +74,7 @@ for NODE in $NODES; do
     done
     echo "$NODE $NODEIP"
     set_hostname_in_hosts $NODE $NODEIP
+    ssh-keygen -R $NODE
 done
 
 # this forces libvirt's dnsmasq to pick up the hosts entries and make them resolvable

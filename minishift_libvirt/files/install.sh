@@ -10,6 +10,7 @@ if [[ ! -d openshift-ansible ]]; then
 fi
 
 cd openshift-ansible
+git checkout release-3.9
 
 ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml
 RC=$?

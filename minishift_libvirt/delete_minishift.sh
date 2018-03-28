@@ -13,6 +13,7 @@ function deletenode {
         virsh undefine --domain $1
         rm -f $SOURCE_FILE
     fi
+    rm -rf /var/lib/libvirt/images/ose3-master1*
 }
 
 
