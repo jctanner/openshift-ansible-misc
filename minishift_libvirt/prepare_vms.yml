@@ -33,3 +33,51 @@
         mode: 0700
         owner: root
         group: root
+
+- name: additional stuff
+  hosts: all
+  user: root
+  gather_facts: False
+  tasks:
+      - name: install epel-release
+        package:
+            name: epel-release
+
+      - name: install some tools
+        package:
+            name: "{{ item }}"
+        with_items:
+            - git
+            - sysstat
+            - bind-utils
+            - tcpdump
+            - lsof
+            - vim-enhanced
+            - python-backports
+            - python-backports-ssl_match_hostname
+            - python-setuptools
+            - python-six
+            - PyYAML
+            - python-jinja2
+            - python-paramiko
+            - python2-cryptography
+            - python-pip
+            - sshpass
+
+      - name: turn on sysstat
+        service:
+            name: sysstat
+            state: started
+            enabled: True
+      
+      - name: copy the install script
+        copy:
+            src: install.sh
+            dest: /root/install.sh
+            mode: 0777
+
+      - name: install ansible from pypi
+        pip:
+            name: ansible
+            state: latest
+
