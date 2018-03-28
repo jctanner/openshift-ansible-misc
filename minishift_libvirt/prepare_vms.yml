@@ -1,0 +1,35 @@
+- name: get the pubkey info
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - name: create local admin inventory
+      slurp:
+        src: ~/.ssh/id_ecdsa.pub
+      register: pubkey_data
+
+    - debug: var=pubkey_data
+
+- name: set the pubkey in authorized_keys on all nodes
+  hosts: all
+  user: root
+  gather_facts: False
+  tasks:
+  
+    - shell: hostname; whoami
+
+    - name: create the .ssh directory
+      file:
+        path: /root/.ssh
+        state: directory
+        mode: 0700
+        owner: root
+        group: root
+
+    - name: make the authorized_keys file
+      copy:
+        content: "{{ hostvars['localhost']['pubkey_data']['content'] | b64decode }}"
+        dest: /root/.ssh/authorized_keys
+        mode: 0700
+        owner: root
+        group: root

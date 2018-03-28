@@ -1,2 +1,4 @@
 openshift-ansible
 venv
+*/inventory.admin
+*.retry
