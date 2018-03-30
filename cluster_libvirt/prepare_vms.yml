@@ -3,10 +3,16 @@
   gather_facts: False
   tasks:
 
-    - name: create local admin inventory
+    - name: get the pubkey
       slurp:
         src: ~/.ssh/id_ecdsa.pub
       register: pubkey_data
+
+    - name: get the privkey
+      slurp:
+        src: ~/.ssh/id_ecdsa
+      register: privkey_data
+
 
     - debug: var=pubkey_data
 
@@ -33,3 +39,109 @@
         mode: 0700
         owner: root
         group: root
+
+- name: sysstat for all
+  hosts: all
+  user: root
+  gather_facts: False
+  tasks:
+
+    - name: install epel-release
+      package:
+        name: epel-release
+
+    - name: install some tools
+      package:
+        name: "{{ item }}"
+      with_items:
+        - sysstat
+        - psmisc
+        - bind-utils
+        - lsof
+
+    - name: make sysstat run faster
+      copy:
+        src: sysstat.cron
+        dest: /etc/cron.d/sysstat
+
+    - name: turn on sysstat
+      service:
+        name: sysstat
+        state: restarted
+        enabled: True
+
+- name: prep the ansible control host
+  hosts: ose3-ansible.test.example.com
+  user: root
+  gather_facts: False
+  tasks:
+
+      - name: make the authorized_keys file
+        copy:
+            content: "{{ hostvars['localhost']['privkey_data']['content'] | b64decode }}"
+            dest: /root/.ssh/id_rsa
+            mode: 0700
+            owner: root
+            group: root
+
+      - name: install epel-release
+        package:
+            name: epel-release
+
+      - name: install some tools
+        package:
+            name: "{{ item }}"
+        with_items:
+            - git
+            #- sysstat
+            - bind-utils
+            - tcpdump
+            - lsof
+            - vim-enhanced
+            - python-backports
+            - python-backports-ssl_match_hostname
+            - python-setuptools
+            - python-six
+            - PyYAML
+            - python-jinja2
+            - python-paramiko
+            - python2-cryptography
+            - python-pip
+            - sshpass
+            #- iptables
+            #- iptables-services
+
+      #- name: make sysstat run faster
+      #  copy:
+      #      src: sysstat.cron
+      #      dest: /etc/cron.d/sysstat
+
+      #- name: turn on sysstat
+      #  service:
+      #      name: sysstat
+      #      state: restarted
+      #      enabled: True
+
+      - name: copy the install script
+        copy:
+            src: install.sh
+            dest: /root/install.sh
+            mode: 0777
+
+      - name: copy the nodes file
+        copy:
+            src: nodes.sh
+            dest: /root/nodes.sh
+            mode: 0777
+
+      - name: copy the inventory editor
+        copy:
+            src: edit_os_inv.sh
+            dest: /root/edit_os_inv.sh
+            mode: 0777
+
+      - name: install ansible from pypi
+        pip:
+            name: ansible
+            state: latest
+

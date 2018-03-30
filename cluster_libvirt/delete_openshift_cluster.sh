@@ -5,11 +5,12 @@
 #  375  virsh list --all
 #  376  virt-sysprep -d EL7TEMPLATE
 
-NODES="ose3-master1.test.example.com ose3-master2.test.example.com ose3-master3.test.example.com"
-NODES="$NODES ose3-node1.test.example.com ose3-node2.test.example.com"
-NODES="$NODES ose3-infra1.test.example.com ose3-infra2.test.example.com"
-NODES="$NODES ose3-lb.test.example.com"
-#NODES="$NODES ose3-nfs-ansible.test.example.com"
+#NODES="ose3-master1.test.example.com ose3-master2.test.example.com ose3-master3.test.example.com"
+#NODES="$NODES ose3-node1.test.example.com ose3-node2.test.example.com"
+#NODES="$NODES ose3-infra1.test.example.com ose3-infra2.test.example.com"
+#NODES="$NODES ose3-lb.test.example.com"
+#NODES="$NODES ose3-ansible.test.example.com"
+source nodes.sh
 
 TEMPLATE="template_centos_7"
 IMAGE_DIR="/var/lib/libvirt/images"
