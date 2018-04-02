@@ -17,16 +17,20 @@ sed -i.bak 's/#log_path/log_path/' ansible.cfg
 
 # bump the inventory
 cp ~/nodes.sh .
-cp ~/edit_os_inv.sh
+cp ~/edit_os_inv.sh .
 ./edit_os_inv.sh
-
-ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml
 RC=$?
 if [[ $RC != 0 ]]; then
 	exit $RC
 fi
 
-ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml
+ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml | tee -a /var/log/os_prereqs.log
+RC=$?
+if [[ $RC != 0 ]]; then
+	exit $RC
+fi
+
+ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml | tee -a /var/log/os_deploy.log
 RC=$?
 if [[ $RC != 0 ]]; then
 	exit $RC

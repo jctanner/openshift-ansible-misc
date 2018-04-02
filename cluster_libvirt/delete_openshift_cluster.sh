@@ -34,3 +34,5 @@ for NODE in $NODES; do
     echo $NODE
     deletenode $NODE
 done
+
+rm inventory.admin
