@@ -35,4 +35,4 @@ for NODE in $NODES; do
     deletenode $NODE
 done
 
-rm inventory.admin
+rm -f inventory.admin

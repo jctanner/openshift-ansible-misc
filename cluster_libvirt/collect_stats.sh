@@ -33,6 +33,8 @@ for NODE in $NODES; do
     ssh root@$NODE 'docker images -a' > $NODEDIR/docker_images.txt
     ssh root@$NODE 'docker ps -a' > $NODEDIR/docker_ps.txt
 
+    ssh root@$NODE 'cd openshift-ansible; git log' > $NODEDIR/commit.log
+
     if [[ ! -d $NODEDIR/docker ]]; then
        mkdir $NODEDIR/docker
     fi 

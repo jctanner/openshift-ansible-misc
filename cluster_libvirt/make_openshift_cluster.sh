@@ -34,8 +34,16 @@ function deletenode {
 function create {
     echo "creating $1"
     virt-clone --connect qemu:///system --original $TEMPLATE --name $1 --file $IMAGE_DIR/$1.qcow2
-    virsh setmaxmem $1 4G --config
-    virsh setmem $1 4G --config
+    if [[ $string = *"master"* ]]; then
+        virsh setmaxmem $1 12G --config
+        virsh setmem $1 12G --config
+    elif [[ $string = *"ansible"* ]]; then
+        virsh setmaxmem $1 16G --config
+        virsh setmem $1 16G --config
+    else
+        virsh setmaxmem $1 4G --config
+        virsh setmem $1 4G --config
+    fi
     virt-sysprep -d $1 --hostname $1 --root-password password:$IMAGE_PASSWORD
     virsh start $1
 }
