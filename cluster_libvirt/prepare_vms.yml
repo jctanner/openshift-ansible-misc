@@ -108,19 +108,15 @@
             - python2-cryptography
             - python-pip
             - sshpass
-            #- iptables
-            #- iptables-services
+            - yum-utils
+            - python-debug
+            - python-debuginfo
+            - glibc-debuginfo
+            - gdb
+            - python-psutil
+            - wget
 
-      #- name: make sysstat run faster
-      #  copy:
-      #      src: sysstat.cron
-      #      dest: /etc/cron.d/sysstat
-
-      #- name: turn on sysstat
-      #  service:
-      #      name: sysstat
-      #      state: restarted
-      #      enabled: True
+      - name: install pydebug
 
       - name: copy the install script
         copy:
