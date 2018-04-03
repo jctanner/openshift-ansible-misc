@@ -139,6 +139,12 @@
             src: edit_os_inv.sh
             dest: /root/edit_os_inv.sh
             mode: 0777
+ 
+      - name: copy the memwatcher script
+        copy:
+            src: memwatcher.py
+            dest: /root/memwatcher.py
+            mode: 0777
 
       - name: install ansible from pypi
         pip:
