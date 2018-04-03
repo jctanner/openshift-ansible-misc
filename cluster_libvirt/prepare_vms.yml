@@ -110,13 +110,12 @@
             - sshpass
             - yum-utils
             - python-debug
-            - python-debuginfo
-            - glibc-debuginfo
             - gdb
             - python-psutil
             - wget
 
       - name: install pydebug
+        shell: debuginfo-install -y python
 
       - name: copy the install script
         copy:
