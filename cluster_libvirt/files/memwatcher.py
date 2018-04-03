@@ -82,7 +82,7 @@ def main():
 
     obs_key = '%memused'
     thresh_hold = 50.0
-    logdir = '/var/log/atracer'
+    logdir = '/var/log/memwatcher'
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
 
