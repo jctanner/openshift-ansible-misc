@@ -24,7 +24,7 @@ def run_command(cmd):
 
 
 def get_ansible_pids():
-
+    print('# finding ansible pids')
     ansible_pids = []
     for pid in psutil.pids():
         try:
@@ -40,6 +40,7 @@ def get_ansible_pids():
 
 
 def get_python_pid_data(pid):
+    print('# running gdb on pid %s' % pid)
     cmd = "gdb -p %s" % pid
     cmd += " -ex 'printf \"\n### BT\n\n\"' -ex bt"
     cmd += " -ex 'printf \"\n### PY-BT\n\n\"' -ex py-bt"
@@ -81,18 +82,23 @@ def get_memstats(average=False):
 def main():
 
     obs_key = '%memused'
-    thresh_hold = 50.0
+    thresh_hold = 40.0
     logdir = '/var/log/memwatcher'
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
 
+    count = 0
     while True:
+
+        print('# iteration %s' % count)
+        count += 1
+
         memstats = get_memstats()
         pprint(memstats)
 
         if memstats[obs_key] > thresh_hold:
 
-            print("Threshold met (%s), fetching and recording data" % \
+            print("# Threshold met (%s), fetching and recording data" % \
                     memstats[obs_key])
 
             jdata = {
@@ -104,7 +110,12 @@ def main():
             for pid in pids:
                 #import epdb; epdb.st()
                 memory_percent = pid.memory_percent()
-                pdata = get_python_pid_data(pid.pid)
+
+                pdata = None
+                try:
+                    pdata = get_python_pid_data(pid.pid)
+                except:
+                    pass
 
                 parent = None
                 try:
