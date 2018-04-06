@@ -31,9 +31,10 @@ def get_ansible_pids():
             proc = psutil.Process(pid)
             cmd = proc.cmdline()
             cmdline = ' '.join(cmd)
-            if 'ansible' in cmdline:
+            if 'ansible' in cmdline and not cmdline.startswith('ssh'):
                 ansible_pids.append(proc)
         except Exception as e:
+            print(e)
             pass
 
     return ansible_pids
@@ -53,7 +54,7 @@ def get_python_pid_data(pid):
     return so.split('\n')
 
 
-def get_memstats(average=False):
+def get_sar_memstats(average=False):
     #[root@ose3-ansible ~]# sar -r 1 1
     #Linux 3.10.0-693.17.1.el7.x86_64 (ose3-ansible.test.example.com)        04/03/2018      _x86_64_        (1 CPU)
     #01:19:22 PM kbmemfree kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit  kbactive   kbinact   kbdirty
@@ -81,54 +82,79 @@ def get_memstats(average=False):
 
 def main():
 
-    obs_key = '%memused'
-    thresh_hold = 40.0
+    #obs_key = '%memused'
+    #thresh_hold = 40.0
+
+    obs_key = '%commit'
+    thresh_hold = 12.0
+
     logdir = '/var/log/memwatcher'
     if not os.path.isdir(logdir):
         os.makedirs(logdir)
 
+    observations = 0
     count = 0
     while True:
 
-        print('# iteration %s' % count)
+        print('# iteration %s (%s obs)' % (count, observations))
         count += 1
 
-        memstats = get_memstats()
-        pprint(memstats)
+        sar_memstats = get_sar_memstats()
+        pprint(sar_memstats)
 
-        if memstats[obs_key] > thresh_hold:
+        if sar_memstats[obs_key] > thresh_hold:
 
-            print("# Threshold met (%s), fetching and recording data" % \
-                    memstats[obs_key])
+            print("# Threshold met (%s), fetching and recording data" %
+                  sar_memstats[obs_key])
+
+            observations += 1
 
             jdata = {
-                'memstats': memstats,
+                'sar_memstats': sar_memstats,
                 'date': datetime.datetime.isoformat(datetime.datetime.now()),
                 'pids': {}
             }
+
             pids = get_ansible_pids()
+
             for pid in pids:
-                #import epdb; epdb.st()
-                memory_percent = pid.memory_percent()
 
                 pdata = None
                 try:
                     pdata = get_python_pid_data(pid.pid)
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
+
+                memory_percent = None
+                try:
+                    memory_percent = pid.memory_percent()
+                except Exception as e:
+                    print(e)
+                    continue
+
+                '''
+                pdata = None
+                try:
+                    pdata = get_python_pid_data(pid.pid)
+                except Exception as e:
+                    print(e)
+                '''
 
                 parent = None
                 try:
                     parent = pid.parent().pid
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
 
-                jdata['pids'][pid.pid] = {
-                    'parent': parent,
-                    'cmdline': pid.cmdline(),
-                    'memory_percent': memory_percent,
-                    'gdb': pdata
-                }
+                try:
+                    jdata['pids'][pid.pid] = {
+                        'parent': parent,
+                        'cmdline': pid.cmdline(),
+                        'memory_percent': memory_percent,
+                        'gdb': pdata
+                    }
+                except Exception as e:
+                    print(e)
 
             logfile = os.path.join(logdir, '%s.json' % jdata['date'])
             with open(logfile, 'w') as f:

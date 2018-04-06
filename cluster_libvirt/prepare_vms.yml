@@ -1,3 +1,19 @@
+- name: create a uuid
+  hosts: localhost
+  gather_facts: False
+  tasks:
+      - shell: uuidgen
+        register: cluster_uuid
+
+- name: put the uuid on all nodes
+  hosts: all
+  user: root
+  gather_facts: False
+  tasks:
+      - shell: echo "{{ hostvars['localhost']['cluster_uuid']['stdout'] }}" > /var/log/cluster.uuid
+        args:
+            creates: /var/log/cluster.uuid
+
 - name: get the pubkey info
   hosts: localhost
   gather_facts: False
