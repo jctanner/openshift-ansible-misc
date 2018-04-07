@@ -92,7 +92,7 @@
   gather_facts: False
   tasks:
 
-      - name: make the authorized_keys file
+      - name: make the privkey file
         copy:
             content: "{{ hostvars['localhost']['privkey_data']['content'] | b64decode }}"
             dest: /root/.ssh/id_rsa
@@ -129,6 +129,7 @@
             - gdb
             - python-psutil
             - wget
+            - libcgroup-tools
 
       - name: install pydebug
         shell: debuginfo-install -y python
@@ -161,4 +162,68 @@
         pip:
             name: ansible
             state: latest
+
+      - name: create the admin group
+        group:
+            name: admin
+            state: present
+
+      - name: create the admin user
+        user:
+            name: admin
+            state: present
+            group: admin
+
+      - name: create the cgroup
+        shell: cgcreate -a admin:admin -t admin:admin -g memory:ansible_profile
+        args:
+            creates: /sys/fs/cgroup/memory/ansible_profile
+
+      - name: create the .ssh directory
+        file:
+          path: /home/admin/.ssh
+          state: directory
+          mode: 0700
+          owner: admin
+          group: admin
+
+      - name: make the authorized_keys file
+        copy:
+          content: "{{ hostvars['localhost']['pubkey_data']['content'] | b64decode }}"
+          dest: /home/admin/.ssh/authorized_keys
+          mode: 0700
+          owner: admin
+          group: admin
+
+      - name: make the privkey file
+        copy:
+          content: "{{ hostvars['localhost']['privkey_data']['content'] | b64decode }}"
+          dest: /home/admin/.ssh/id_rsa
+          mode: 0700
+          owner: admin
+          group: admin
+
+      - name: copy the install script
+        copy:
+          src: install.sh
+          dest: /home/admin/install.sh
+          mode: 0777
+
+      - name: copy the nodes file
+        copy:
+          src: nodes.sh
+          dest: /home/admin/nodes.sh
+          mode: 0777
+
+      - name: copy the inventory editor
+        copy:
+          src: edit_os_inv.sh
+          dest: /home/admin/edit_os_inv.sh
+          mode: 0777
+     
+      - name: copy the memwatcher script
+        copy:
+          src: memwatcher.py
+          dest: /home/admin/memwatcher.py
+          mode: 0777
 

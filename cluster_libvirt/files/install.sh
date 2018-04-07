@@ -1,6 +1,7 @@
 #!/bin/bash
 
 COMMON_ARGS="-i inventory/hosts.example"
+COMMON_ARGS="$COMMON_ARGS --user=root"
 COMMON_ARGS="$COMMON_ARGS -e openshift_repos_enable_testing=true"
 COMMON_ARGS="$COMMON_ARGS -e openshift_release=3.9"
 COMMON_ARGS="$COMMON_ARGS -e openshift_disable_check=docker_storage,disk_availability,memory_availability"
@@ -31,13 +32,36 @@ if [[ $RC != 0 ]]; then
 	exit $RC
 fi
 
-ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml | tee -a /var/log/os_prereqs.log
+# add the callback
+mkdir callback_plugins
+mkdir -p playbooks/callback_plugins
+
+CBURL="https://gist.githubusercontent.com/sivel/2b0bc0c715fe8d341af195cf0f39849c/raw/ceec3140450bf6fbf16cd7283fb279dd8477b744/cgroup_memory_recap.py"
+#CBURL="https://gist.githubusercontent.com/jctanner/bfc00e7a2b4fb0693a2b9617fed6326f/raw/3e045f099c92a0a193aa37e33d674df5c07e45f6/cgroup_memory_recap.py"
+
+curl -o callback_plugins/cgroup_memory_recap.py $CBURL
+curl -o playbooks/callback_plugins/cgroup_memory_recap.py $CBURL
+
+sed -i.bak 's/profile_tasks/profile_tasks, cgroup_memory_recap/' ansible.cfg
+#sed -i.bak 's/profile_tasks/cgroup_memory_recap/' ansible.cfg
+#exit 1
+
+CGEXPORTS="ANSIBLE_CALLBACK_WHITELIST=cgroup_memory_recap"
+CGEXPORTS="$CGEXPORTS CGROUP_MAX_MEM_FILE=/sys/fs/cgroup/memory/ansible_profile/memory.max_usage_in_bytes"
+CGEXPORTS="$CGEXPORTS CGROUP_CUR_MEM_FILE=/sys/fs/cgroup/memory/ansible_profile/memory.usage_in_bytes"
+
+export ANSIBLE_CALLBACK_WHITELIST=cgroup_memory_recap
+export CGROUP_MAX_MEM_FILE=/sys/fs/cgroup/memory/ansible_profile/memory.max_usage_in_bytes
+export CGROUP_CUR_MEM_FILE=/sys/fs/cgroup/memory/ansible_profile/memory.usage_in_bytes
+
+
+cgexec -g memory:ansible_profile ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml | tee -a /var/log/os_prereqs.log
 RC=$?
 if [[ $RC != 0 ]]; then
 	exit $RC
 fi
 
-ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml | tee -a /var/log/os_deploy.log
+cgexec -g memory:ansible_profile ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml | tee -a /var/log/os_deploy.log
 RC=$?
 if [[ $RC != 0 ]]; then
 	exit $RC
