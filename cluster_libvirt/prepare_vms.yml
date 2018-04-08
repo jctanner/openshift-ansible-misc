@@ -227,3 +227,5 @@
           dest: /home/admin/memwatcher.py
           mode: 0777
 
+      - name: touch the logfiles
+        shell: touch /var/log/os_prereqs.log /var/log/os_deploy.log ; chmod 777 /var/log/os_*.log
