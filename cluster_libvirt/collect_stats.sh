@@ -23,6 +23,7 @@ for NODE in $NODES; do
         mkdir -p $NODEDIR/var.log
     fi
     
+    scp -r root@$NODE:/etc $NODEDIR/etc
     scp -r root@$NODE:/var/log/* $NODEDIR/var.log
     scp root@$NODE:/tmp/ansible.log $NODEDIR/.
     scp root@$NODE:/openshift-ansible/inventory/hosts.example $NODEDIR/.
@@ -32,6 +33,9 @@ for NODE in $NODES; do
     ssh root@$NODE 'pstree -a' > $NODEDIR/pstree_a.txt
     ssh root@$NODE 'docker images -a' > $NODEDIR/docker_images.txt
     ssh root@$NODE 'docker ps -a' > $NODEDIR/docker_ps.txt
+    ssh root@$NODE 'ansible --version' > $NODEDIR/ansible.version
+    ssh root@$NODE 'rpm -qa' > $NODEDIR/rpms.txt
+    ssh root@$NODE 'yum repolist' > $NODEDIR/yumrepos.txt
 
     ssh root@$NODE 'cd openshift-ansible; git log' > $NODEDIR/commit.log
 
