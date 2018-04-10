@@ -37,3 +37,6 @@ if [[ $RC != 0 ]]; then
     exit $RC
 fi
 
+ssh admin@ose3-ansible.test.example.com '/home/admin/install.sh'
+
+./collect_stats.sh

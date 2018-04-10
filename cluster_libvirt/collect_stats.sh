@@ -37,7 +37,8 @@ for NODE in $NODES; do
     ssh root@$NODE 'rpm -qa' > $NODEDIR/rpms.txt
     ssh root@$NODE 'yum repolist' > $NODEDIR/yumrepos.txt
 
-    ssh root@$NODE 'cd openshift-ansible; git log' > $NODEDIR/commit.log
+    ssh root@$NODE 'cd openshift-ansible; git log' > $NODEDIR/commit_root.log
+    ssh root@$NODE 'cd /home/admin/openshift-ansible; git log' > $NODEDIR/commit_admin.log
 
     if [[ ! -d $NODEDIR/docker ]]; then
        mkdir $NODEDIR/docker
