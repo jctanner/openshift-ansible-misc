@@ -128,7 +128,7 @@ class ResultsProcessor(object):
 
                 xvals = [0 for x in obs_ratios]
 
-                import epdb; epdb.st()
+                #import epdb; epdb.st()
 
         import epdb; epdb.st()
 
@@ -337,6 +337,8 @@ class ResultsProcessor(object):
         # results/2018-04-08-18:41:33/ose3-ansible.test.example.com/commit.log
         (rc, so, se) = run_command('find %s/*ansible* -type f -name "commit*.log"' % timedir)
         files = [x.strip() for x in so.split('\n') if x.strip()]
+        if len(files) > 1:
+            files = [x for x in files if 'admin' in x]
 
         cinfo = {}
 
@@ -347,7 +349,8 @@ class ResultsProcessor(object):
             if not loglines:
                 continue
 
-            import epdb; epdb.st()
+            #import epdb; epdb.st()
+            pass
 
         return cinfo
 
@@ -388,7 +391,7 @@ class ResultsProcessor(object):
 
 def main():
 
-    resdir = '_results'
+    resdir = 'results'
     RP = ResultsProcessor(resdir)
     RP.compare_task_sequence()
     import epdb; epdb.st()

@@ -18,7 +18,7 @@ git checkout release-3.9
 
 # FIX: c62bc3471a1aec6d407b3870fcb27fb8dc7bbb3b
 # GOTO: 0fc46503be158b68502890598a4ee3e31c0e3bf0
-git checkout 0fc46503be158b68502890598a4ee3e31c0e3bf0
+#git checkout 0fc46503be158b68502890598a4ee3e31c0e3bf0
 
 # logging is not in by default
 sed -i.bak 's/#log_path/log_path/' ansible.cfg
