@@ -36,8 +36,9 @@ fi
 mkdir callback_plugins
 mkdir -p playbooks/callback_plugins
 
-CBURL="https://gist.githubusercontent.com/sivel/2b0bc0c715fe8d341af195cf0f39849c/raw/ceec3140450bf6fbf16cd7283fb279dd8477b744/cgroup_memory_recap.py"
+#CBURL="https://gist.githubusercontent.com/sivel/2b0bc0c715fe8d341af195cf0f39849c/raw/ceec3140450bf6fbf16cd7283fb279dd8477b744/cgroup_memory_recap.py"
 #CBURL="https://gist.githubusercontent.com/jctanner/bfc00e7a2b4fb0693a2b9617fed6326f/raw/3e045f099c92a0a193aa37e33d674df5c07e45f6/cgroup_memory_recap.py"
+CBURL="https://raw.githubusercontent.com/sivel/ansible/cgroup-memory-profile-callback/lib/ansible/plugins/callback/cgroup_memory_recap.py"
 
 curl -o callback_plugins/cgroup_memory_recap.py $CBURL
 curl -o playbooks/callback_plugins/cgroup_memory_recap.py $CBURL

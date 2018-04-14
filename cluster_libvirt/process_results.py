@@ -10,6 +10,8 @@ import numpy as np
 from scipy.stats import linregress
 from operator import itemgetter
 
+from lib.gitLogParser import gitlogparser
+
 
 def run_command(cmd):
     p = subprocess.Popen(
@@ -40,6 +42,12 @@ class ResultsProcessor(object):
             cluster_uuid = self.get_cluster_uuid(td)
             cluster_nodes = self.get_cluster_nodes(td)
             cluster_commit = self.get_cluster_commit_info(td)
+
+            if not cluster_commit:
+                continue
+            if cluster_commit['date'].startswith('2018-03-23'):
+                continue
+
             install_success = self.get_install_result(td)
             if not install_success:
                 failure_message = self.get_failure_info(td)
@@ -105,8 +113,12 @@ class ResultsProcessor(object):
         # divide total mem by the number of nodes
         for k,v in task_data.items():
             obs = v['observations'][:]
+            if not obs:
+                continue
             obs_ratios = [x[1] / x[0] for x in obs]
             obs_mean = np.mean(obs_ratios)
+            if np.isnan(obs_mean):
+                import epdb; epdb.st()
             mean_ratios.append(obs_mean)
 
         # make some baseline stats
@@ -340,19 +352,20 @@ class ResultsProcessor(object):
         if len(files) > 1:
             files = [x for x in files if 'admin' in x]
 
-        cinfo = {}
-
+        commits = []
         for filen in files:
             with open(filen, 'r') as f:
-                loglines = f.readlines()
+                glog = f.read()
 
-            if not loglines:
+            if not glog:
                 continue
 
-            #import epdb; epdb.st()
-            pass
+            commits = gitlogparser(glog)
 
-        return cinfo
+        if commits:
+            return commits[0]
+
+        return {}
 
     def get_sar_data(self, timedir):
         (rc, so, se) = run_command('find %s/*ansible* -type f -name "sar.txt"' % timedir)
