@@ -86,6 +86,16 @@
         state: restarted
         enabled: True
 
+- name: workarounds 
+  hosts: all
+  user: root
+  gather_facts: False
+  tasks:
+      - file:
+          path: /etc/ansible
+          state: directory
+          mode: 0777
+
 - name: prep the ansible control host
   hosts: ose3-ansible.test.example.com
   user: root
@@ -110,6 +120,7 @@
         with_items:
             - git
             #- sysstat
+            - strace
             - bind-utils
             - tcpdump
             - lsof
@@ -158,10 +169,13 @@
             dest: /root/memwatcher.py
             mode: 0777
 
-      - name: install ansible from pypi
+      #- name: install ansible from pypi
+      #  pip:
+      #      name: ansible
+      #      state: latest
+      - name: install ansible from github
         pip:
-            name: ansible
-            state: latest
+            name: git+https://github.com/ansible/ansible.git@devel
 
       - name: create the admin group
         group:
