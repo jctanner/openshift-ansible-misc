@@ -75,13 +75,18 @@ function set_hostname_in_hosts {
 
 for NODE in $NODES; do
     echo $NODE
-    deletenode $NODE
+    if [[ $NODE != *"ansible"* ]]; then
+        deletenode $NODE
+    fi
 done
 
 
 for NODE in $NODES; do
     echo $NODE
     create $NODE
+    #if [[ $NODE != *"ansible"* ]]; then
+    #    create $NODE
+    #fi
 done
 
 for NODE in $NODES; do

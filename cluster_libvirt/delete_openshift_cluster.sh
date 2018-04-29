@@ -33,6 +33,9 @@ function deletenode {
 for NODE in $NODES; do
     echo $NODE
     deletenode $NODE
+    #if [[ $NODE != *"ansible"* ]]; then
+    #    deletenode $NODE
+    #fi
 done
 
 rm -f inventory.admin

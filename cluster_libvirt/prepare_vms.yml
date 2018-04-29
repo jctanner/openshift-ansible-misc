@@ -151,6 +151,12 @@
             dest: /root/install.sh
             mode: 0777
 
+      - name: copy the node expander script
+        copy:
+            src: os_expander.py
+            dest: /root/os_expander.py
+            mode: 0777
+
       - name: copy the nodes file
         copy:
             src: nodes.sh
@@ -221,6 +227,12 @@
         copy:
           src: install.sh
           dest: /home/admin/install.sh
+          mode: 0777
+
+      - name: copy the node expander script
+        copy:
+          src: os_expander.py
+          dest: /home/admin/os_expander.py
           mode: 0777
 
       - name: copy the nodes file

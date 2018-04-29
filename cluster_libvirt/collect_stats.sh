@@ -30,6 +30,7 @@ for NODE in $NODES; do
 
     scp $SSHARGS -r root@$NODE:/etc $NODEDIR/etc
     scp $SSHARGS -r root@$NODE:/var/log/* $NODEDIR/var.log
+    scp $SSHARGS -r root@$NODE:/tmp/fixtures* $NODEDIR/.
     scp $SSHARGS root@$NODE:/tmp/ansible.log $NODEDIR/.
     scp $SSHARGS root@$NODE:/openshift-ansible/inventory/hosts.example $NODEDIR/.
     ssh $SSHARGS root@$NODE 'sar -r' > $NODEDIR/sar.txt

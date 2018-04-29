@@ -38,5 +38,9 @@ if [[ $RC != 0 ]]; then
 fi
 
 ssh admin@ose3-ansible.test.example.com '/home/admin/install.sh'
+RC=$?
 
 ./collect_stats.sh
+
+echo "INSTALL RC: $RC"
+exit $RC

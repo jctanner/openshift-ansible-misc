@@ -32,8 +32,10 @@ function enable_vcr {
     curl -o connection_plugins/local.py $VCRURL/connection_plugins/local.py
     curl -o connection_plugins/ssh.py $VCRURL/connection_plugins/ssh.py
 
-    rm -rf /tmp/fixtures
-    export ANSIBLE_RECORDER_MODE="record"
+    rm -rf /tmp/fixtures*
+    VCR_MODE="record"
+
+    rm -f /tmp/fixtures*/*_${VCR_MODE}.log
 
     if [[ -z $CALLBACKS ]]; then
         CALLBACKS="vcr"
@@ -42,7 +44,8 @@ function enable_vcr {
     fi
 }
 
-ANSIBLE_CALLBACK_WHITELIST=cgroup_memory_recap
+VCR_MODE=""
+CALLBACKS=""
 PREFIX=""
 COMMON_ARGS="-i inventory/hosts.example"
 COMMON_ARGS="$COMMON_ARGS -vvvv"
@@ -66,6 +69,9 @@ git checkout release-3.9
 #git checkout 0fc46503be158b68502890598a4ee3e31c0e3bf0
 #git checkout 9e0f2db4fe181aa55677142de69a95155fc77e9e #Fri Apr 13 15:07:25 2018 -0500
 
+# FIX https://github.com/openshift/openshift-ansible/pull/8002
+sed -i.bak 's/raise errors.AnsibleFilterError("|failed expects hostvars is a dict")/pass/' roles/lib_utils/filter_plugins/openshift_master.py
+
 # logging is not in by default
 sed -i.bak 's/#log_path/log_path/' ansible.cfg
 
@@ -82,24 +88,34 @@ fi
 mkdir callback_plugins
 mkdir -p playbooks/callback_plugins
 
-#enable_vcr
-#enable_memrecap
+enable_vcr
+enable_memrecap
 
 if [[ ! -z $CALLBACKS ]]; then
     export ANSIBLE_CALLBACK_WHITELIST=$CALLBACKS
     sed -i.bak "s/profile_tasks/profile_tasks,$CALLBACKS/" ansible.cfg
 fi
 
+if [[ ! -z $VCR_MODE ]]; then
+    export ANSIBLE_VCR_MODE=$VCR_MODE
+fi
+
+rm -f /tmp/ansible.log
+
+export ANSIBLE_VCR_FIXTURE_DIR=/tmp/fixtures.prerequisites
+rm -f /var/log/os_prereqs.log
+rm -rf ~/ansible/facts
 $PREFIX ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml | tee -a /var/log/os_prereqs.log
 RC=$?
 if [[ $RC != 0 ]]; then
-	exit $RC
+    exit $RC
 fi
 
-exit 1
-
+export ANSIBLE_VCR_FIXTURE_DIR=/tmp/fixtures.deploy
+rm -f /var/log/os_deploy.log
+rm -rf ~/ansible/facts
 $PREFIX ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml | tee -a /var/log/os_deploy.log
 RC=$?
 if [[ $RC != 0 ]]; then
-	exit $RC
+    exit $RC
 fi
