@@ -105,6 +105,7 @@ rm -f /tmp/ansible.log
 export ANSIBLE_VCR_FIXTURE_DIR=/tmp/fixtures.prerequisites
 rm -f /var/log/os_prereqs.log
 rm -rf ~/ansible/facts
+rm -rf /tmp/ose3-*
 $PREFIX ansible-playbook $COMMON_ARGS playbooks/prerequisites.yml | tee -a /var/log/os_prereqs.log
 RC=$?
 if [[ $RC != 0 ]]; then
@@ -114,6 +115,7 @@ fi
 export ANSIBLE_VCR_FIXTURE_DIR=/tmp/fixtures.deploy
 rm -f /var/log/os_deploy.log
 rm -rf ~/ansible/facts
+rm -rf /tmp/ose3-*
 $PREFIX ansible-playbook $COMMON_ARGS playbooks/deploy_cluster.yml | tee -a /var/log/os_deploy.log
 RC=$?
 if [[ $RC != 0 ]]; then
